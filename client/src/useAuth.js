@@ -1,31 +1,49 @@
 import React, { useEffect } from 'react'
+import { setInterval } from 'timers/promises'
 
 export default function useAuth(code) {
  const [accessToken, setAccessToken] = useState()
  const [refreshToken, setRefreshToken] = useState()
- const [expiresIn, setExpriesIn] = useState()
+ const [expiresIn, setExpiresIn] = useState()
 
 // console.log(refreshToken)
 
  useEffect(() => {
     axios
-    .post('http://localhost:3001/refresh', {
-        refreshToken,
+    .post('http://localhost:3001/login', {
+        code,
     }).then(res => {
         setAccessToken(res.data.accessToken) 
-        setExpriesIn(res.data.expiresIn)
-        // takes out from url
+        setRefreshToken(res.data.refreshToken)
+        setExpiresIn(res.data.expiresIn)
         window.history.pushState({}, null, "/")
     })
     .catch(() => {
         window.location = "/"
     })
- },
-    
-useEffect(() => {
+ }, [code]) 
 
- },[refreshToken, expiresIn])
+ useEffect(() => {
 
+ }, [refreshToken, expiresIn])
 
- return accessToken
+ useEffect(() => {
+    if (refreshToken || !expiresIn) return
+    const interval = setInterval(() => {
+    axios
+    .post('http://localhost:3001/refresh', {
+        refreshToken,
+    }).then(res => {
+        setAccessToken(res.data.accessToken) 
+        setExpiresIn(res.data.expiresIn)
+    })
+    .catch(() => {
+        window.location = "/"
+    })
+  }, (expiresIn - 60) * 1000)
+
+  return () => clearInterval(interval) 
+ }, [refreshToken, expiresIn])
+
+ return accessToken 
 }

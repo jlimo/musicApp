@@ -22,7 +22,7 @@ spotifyApi.refreshAccessToken()
 .then(data => {
         res.json({
             accessToken: data.body.accessToken,
-            expiresIn: data.body.expiresIn,
+            expiresIn: data.body.expiresIn, 
         })
     }).catch(() => {
        res.sendStatus(400) 
